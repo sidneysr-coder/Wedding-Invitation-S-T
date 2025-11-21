@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Our Wedding</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Cormorant Garamond", serif;
+      background-color: #f4efe9;
+      color: #3a2a1a;
+    }
+    header {
+      text-align: center;
+      padding: 60px 20px;
+      background: linear-gradient(to bottom, #e9dcc5, #f4efe9);
+    }
+    header h1 {
+      font-size: 3rem;
+      margin: 0;
+      letter-spacing: 2px;
+    }
+    header p {
+      font-size: 1.2rem;
+      margin-top: 10px;
+    }
+    nav {
+      display: flex;
+      justify-content: center;
+      gap: 25px;
+      padding: 15px 0;
+      background-color: #d7c4aa;
+    }
+    nav a {
+      text-decoration: none;
+      color: #3a2a1a;
+      font-weight: bold;
+      font-size: 1.1rem;
+    }
+    .section {
+      padding: 60px 20px;
+      max-width: 900px;
+      margin: auto;
+    }
+    h2 {
+      text-align: center;
+      font-size: 2.3rem;
+      margin-bottom: 25px;
+      color: #3a2410;
+    }
+    .card {
+      background-color: #efe6d9;
+      padding: 35px;
+      border-radius: 18px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+      line-height: 1.7;
+      font-size: 1.2rem;
+    }
+    .photos-placeholder {
+      background-color: #d2bfa5;
+      height: 250px;
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #6a5135;
+      font-size: 1.3rem;
+      margin-top: 20px;
+      box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.15);
+    }
+    footer {
+      text-align: center;
+      padding: 30px;
+      background-color: #d7c4aa;
+      margin-top: 60px;
+      font-size: 1rem;
+    }
+    .protected {
+      background-color: #e8dcc5;
+      padding: 30px;
+      border-radius: 12px;
+      margin-top: 30px;
+    }
+    .password-input {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .password-input input {
+      padding: 8px;
+      font-size: 1rem;
+      border-radius: 6px;
+      border: 1px solid #bfa97c;
+    }
+    .password-input button {
+      padding: 8px 12px;
+      background-color: #bfa97c;
+      border: none;
+      color: #fff;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Sidney & Tristan</h1>
+  <p>We can’t wait to celebrate with you</p>
+</header>
+
+<nav>
+  <a href="#story">Our Story</a>
+  <a href="#photos">Photos</a>
+  <a href="#private">RSVP & Guest Limits</a>
+  <a href="#honeymoon">Honeymoon Fund</a>
+</nav>
+
+<div id="story" class="section">
+  <h2>Our Story</h2>
+  <div class="card">
+    <p>
+      We met in 2023 at the Whiskey River West bar. Tristan was looking to dance,
+      and I was out with a group of friends. The moment I saw Tristan, I knew I had
+      to dance with him — so I made sure he noticed me and asked me to dance.
+      We danced one song, then two more. Later in the night, he came back and
+      asked me to dance again, and we ended up dancing until the place was about
+      to close.
+    </p>
+    <p>
+      Tristan asked for my number, and I gave it to him thinking I would never
+      see him again — I assumed he was just visiting for business. Little did I
+      know that he actually lived in Katy, and that he felt the same connection I
+      did. The next day (or so), he texted me and invited me on our first date...
+      and from that moment on, we’ve been inseparable.
+    </p>
+  </div>
+</div>
+
+<div id="photos" class="section">
+  <h2>Photos</h2>
+  <div class="photos-placeholder">Photo Gallery Coming Soon</div>
+</div>
+
+<div id="private" class="section">
+  <h2>RSVP & Family Guest Limits</h2>
+  <div class="protected" id="protected-section">
+    <div class="password-input" id="password-box">
+      <input type="password" id="password" placeholder="Enter password" />
+      <button onclick="checkPassword()">Unlock</button>
+    </div>
+    <div id="private-content" class="hidden">
+      <p>Please fill out your RSVP form below and check your family's guest limit.</p>
+      <!-- RSVP form placeholder -->
+      <form>
+        <label>Full Name: <input type="text" required></label><br><br>
+        <label>Email: <input type="email" required></label><br><br>
+        <label>Number of Guests: <input type="number" min="1" max="10" required></label><br><br>
+        <label>Will you attend?
+          <select required>
+            <option value="yes">Yes</option>
+            <option value="no">No</option>
+          </select>
+        </label><br><br>
+        <button type="submit">Submit RSVP</button>
+      </form>
+      <p>Guest limits are assigned per family. Please follow the limits indicated on your invitation.</p>
+    </div>
+  </div>
+</div>
+
+<div id="honeymoon" class="section">
+  <h2>Honeymoon Fund</h2>
+  <div class="card">
+    A link to contribute to our honeymoon fund will be available soon. Thank you
+    for your love and support — it means the world to us.
+  </div>
+</div>
+
+<footer>
+  &copy; Sidney & Tristan, 2026
+</footer>
+
+<script>
+  const correctPassword = "Tris&Sid26";
+  function checkPassword() {
+    const input = document.getElementById('password').value;
+    if (input === correctPassword) {
+      document.getElementById('private-content').classList.remove('hidden');
+      document.getElementById('password-box').style.display = 'none';
+    } else {
+      alert('Incorrect password. Please try again.');
+    }
+  }
+</script>
+
+</body>
+</html>
