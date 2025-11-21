@@ -1,0 +1,431 @@
+import React, { useState, useEffect } from 'react';
+import { Heart, Calendar, MapPin, Gift, Users, Clock, ChevronDown } from 'lucide-react';
+
+export default function WeddingInvitation() {
+  // ====== CUSTOMIZE YOUR COLORS HERE ======
+  // Change these to any color you want!
+  // Examples: 'blue-500', 'purple-500', 'emerald-500', 'pink-500', 'indigo-500'
+  const colors = {
+    primary: 'brown',      // Main color (buttons, accents) - Golden
+    secondary: 'orange',    // Secondary color (backgrounds) - Burnt orange
+    accent: 'yellow'      // Accent color (gradients) - Champagne
+  };
+  // ========================================
+
+  const [activeSection, setActiveSection] = useState('home');
+  const [rsvpForm, setRsvpForm] = useState({ name: '', email: '', guests: '1', attending: 'yes', dietary: '', message: '' });
+  const [submitted, setSubmitted] = useState(false);
+  const [rsvps, setRsvps] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+
+  const weddingDate = new Date('2026-11-14T16:00:00');
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const now = new Date();
+      const difference = weddingDate - now;
+      
+      if (difference > 0) {
+        setCountdown({
+          days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+          minutes: Math.floor((difference / 1000 / 60) % 60),
+          seconds: Math.floor((difference / 1000) % 60)
+        });
+      }
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    if (activeSection === 'admin') {
+      loadRsvps();
+    }
+  }, [activeSection]);
+
+  const loadRsvps = async () => {
+    setLoading(true);
+    try {
+      const result = await window.storage.list('rsvp:', true);
+      if (result && result.keys) {
+        const rsvpData = await Promise.all(
+          result.keys.map(async (key) => {
+            try {
+              const data = await window.storage.get(key, true);
+              return data ? JSON.parse(data.value) : null;
+            } catch (e) {
+              return null;
+            }
+          })
+        );
+        setRsvps(rsvpData.filter(r => r !== null));
+      }
+    } catch (error) {
+      console.log('No RSVPs yet');
+      setRsvps([]);
+    }
+    setLoading(false);
+  };
+
+  const handleRsvpSubmit = async () => {
+    setLoading(true);
+
+    try {
+      const rsvpData = {
+        ...rsvpForm,
+        timestamp: new Date().toISOString()
+      };
+      
+      const key = `rsvp:${Date.now()}_${rsvpForm.email}`;
+      await window.storage.set(key, JSON.stringify(rsvpData), true);
+      
+      setSubmitted(true);
+      setRsvpForm({ name: '', email: '', guests: '1', attending: 'yes', dietary: '', message: '' });
+    } catch (error) {
+      alert('There was an error submitting your RSVP. Please try again.');
+    }
+    setLoading(false);
+  };
+
+  const sections = {
+    home: (
+      <div className="text-center space-y-8 animate-fade-in">
+        <div className="space-y-4">
+          <Heart className={`w-16 h-16 mx-auto text-${colors.primary}-400 animate-pulse`} />
+          <h1 className="text-5xl font-serif text-gray-800">Tristan & Sidney</h1>
+          <p className="text-2xl text-gray-600 font-light">are getting married!</p>
+        </div>
+        
+        <div className="bg-white/80 backdrop-blur p-8 rounded-lg shadow-lg max-w-md mx-auto">
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <Calendar className={`w-5 h-5 text-${colors.primary}-500`} />
+            <p className="text-xl text-gray-700">November 14, 2026</p>
+          </div>
+          <div className="flex items-center justify-center gap-2">
+            <MapPin className={`w-5 h-5 text-${colors.primary}-500`} />
+            <p className="text-lg text-gray-600">The Springs Weddings & Events, Magnolia, TX</p>
+          </div>
+        </div>
+
+        <div className={`bg-gradient-to-r from-${colors.primary}-100 to-${colors.secondary}-100 p-8 rounded-lg max-w-2xl mx-auto`}>
+          <h3 className="text-2xl font-serif mb-4 text-gray-800">Countdown to Our Big Day</h3>
+          <div className="grid grid-cols-4 gap-4">
+            {[
+              { label: 'Days', value: countdown.days },
+              { label: 'Hours', value: countdown.hours },
+              { label: 'Minutes', value: countdown.minutes },
+              { label: 'Seconds', value: countdown.seconds }
+            ].map((item) => (
+              <div key={item.label} className="bg-white rounded-lg p-4 shadow">
+                <div className={`text-3xl font-bold text-${colors.primary}-600`}>{item.value}</div>
+                <div className="text-sm text-gray-600">{item.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <ChevronDown className="w-8 h-8 mx-auto text-gray-400 animate-bounce" />
+      </div>
+    ),
+
+    details: (
+      <div className="space-y-8 max-w-3xl mx-auto">
+        <h2 className="text-4xl font-serif text-center text-gray-800 mb-8">Event Details</h2>
+        
+        <div className="grid md:grid-cols-2 gap-6">
+          <div className="bg-white/90 backdrop-blur p-6 rounded-lg shadow-lg">
+            <h3 className={`text-2xl font-serif mb-4 text-${colors.primary}-600 flex items-center gap-2`}>
+              <Clock className="w-6 h-6" />
+              Ceremony
+            </h3>
+            <p className="text-gray-700 mb-2"><strong>Time:</strong> 4:00 PM</p>
+            <p className="text-gray-700 mb-2"><strong>Location:</strong> The Springs Weddings & Events</p>
+            <p className="text-gray-700">33301 Old Hempstead Rd, Magnolia, TX 77355</p>
+          </div>
+
+          <div className="bg-white/90 backdrop-blur p-6 rounded-lg shadow-lg">
+            <h3 className={`text-2xl font-serif mb-4 text-${colors.primary}-600 flex items-center gap-2`}>
+              <Users className="w-6 h-6" />
+              Reception
+            </h3>
+            <p className="text-gray-700 mb-2"><strong>Time:</strong> 6:00 PM</p>
+            <p className="text-gray-700 mb-2"><strong>Location:</strong> Same Venue</p>
+            <p className="text-gray-700">Dinner & dancing to follow ceremony</p>
+          </div>
+        </div>
+
+        <div className="bg-white/90 backdrop-blur p-6 rounded-lg shadow-lg">
+          <h3 className={`text-2xl font-serif mb-4 text-${colors.primary}-600`}>Dress Code</h3>
+          <p className="text-gray-700">Formal attire. Outshine the bride but avoid white! Think elegant fall colors - rich browns, golden tones, ivory, champagne, burnt orange, and dusty blue are perfect for our autumn celebration.</p>
+        </div>
+
+        <div className="bg-white/90 backdrop-blur p-6 rounded-lg shadow-lg">
+          <h3 className={`text-2xl font-serif mb-4 text-${colors.primary}-600 flex items-center gap-2`}>
+            <MapPin className="w-6 h-6" />
+            Getting There
+          </h3>
+          <p className="text-gray-700 mb-4">Free parking available on-site. The venue is located in beautiful Magnolia, Texas.</p>
+          <a 
+            href="https://www.google.com/maps/place/33301+Old+Hempstead+Rd,+Magnolia,+TX+77355" 
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`inline-block bg-${colors.primary}-500 text-white px-6 py-2 rounded-full hover:bg-${colors.primary}-600 transition`}
+          >
+            Get Directions
+          </a>
+        </div>
+      </div>
+    ),
+
+    rsvp: (
+      <div className="max-w-2xl mx-auto">
+        <h2 className="text-4xl font-serif text-center text-gray-800 mb-8">RSVP</h2>
+        
+        {submitted ? (
+          <div className="bg-white/90 backdrop-blur p-8 rounded-lg shadow-lg text-center">
+            <Heart className={`w-16 h-16 mx-auto text-${colors.primary}-500 mb-4`} />
+            <h3 className="text-2xl font-serif text-gray-800 mb-4">Thank You!</h3>
+            <p className="text-gray-700 mb-4">We've received your RSVP and can't wait to celebrate with you!</p>
+            <button 
+              onClick={() => setSubmitted(false)}
+              className={`text-${colors.primary}-600 hover:text-${colors.primary}-700 underline`}
+            >
+              Submit another RSVP
+            </button>
+          </div>
+        ) : (
+          <div className="bg-white/90 backdrop-blur p-8 rounded-lg shadow-lg space-y-6">
+            <div>
+              <label className="block text-gray-700 mb-2 font-medium">Full Name *</label>
+              <input
+                type="text"
+                required
+                value={rsvpForm.name}
+                onChange={(e) => setRsvpForm({...rsvpForm, name: e.target.value})}
+                className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-${colors.primary}-500 focus:border-transparent`}
+              />
+            </div>
+
+            <div>
+              <label className="block text-gray-700 mb-2 font-medium">Email *</label>
+              <input
+                type="email"
+                required
+                value={rsvpForm.email}
+                onChange={(e) => setRsvpForm({...rsvpForm, email: e.target.value})}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent"
+              />
+            </div>
+
+            <div>
+              <label className="block text-gray-700 mb-2 font-medium">Will you be attending? *</label>
+              <select
+                required
+                value={rsvpForm.attending}
+                onChange={(e) => setRsvpForm({...rsvpForm, attending: e.target.value})}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent"
+              >
+                <option value="yes">Joyfully accepts</option>
+                <option value="no">Regretfully declines</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-gray-700 mb-2 font-medium">Number of Guests *</label>
+              <select
+                required
+                value={rsvpForm.guests}
+                onChange={(e) => setRsvpForm({...rsvpForm, guests: e.target.value})}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent"
+              >
+                <option value="1">1 Guest</option>
+                <option value="2">2 Guests</option>
+                <option value="3">3 Guests</option>
+                <option value="4">4 Guests</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-gray-700 mb-2 font-medium">Dietary Restrictions</label>
+              <input
+                type="text"
+                value={rsvpForm.dietary}
+                onChange={(e) => setRsvpForm({...rsvpForm, dietary: e.target.value})}
+                placeholder="Vegetarian, allergies, etc."
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent"
+              />
+            </div>
+
+            <div>
+              <label className="block text-gray-700 mb-2 font-medium">Message to the Couple</label>
+              <textarea
+                value={rsvpForm.message}
+                onChange={(e) => setRsvpForm({...rsvpForm, message: e.target.value})}
+                rows="4"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent"
+              />
+            </div>
+
+            <button
+              onClick={handleRsvpSubmit}
+              disabled={loading}
+              className={`w-full bg-${colors.primary}-500 text-white py-3 rounded-lg font-medium hover:bg-${colors.primary}-600 transition disabled:opacity-50`}
+            >
+              {loading ? 'Submitting...' : 'Submit RSVP'}
+            </button>
+          </div>
+        )}
+      </div>
+    ),
+
+    registry: (
+      <div className="max-w-2xl mx-auto text-center space-y-8">
+        <h2 className="text-4xl font-serif text-gray-800 mb-8">Registry</h2>
+        
+        <div className="bg-white/90 backdrop-blur p-8 rounded-lg shadow-lg">
+          <Gift className={`w-16 h-16 mx-auto text-${colors.primary}-500 mb-4`} />
+          <p className="text-gray-700 mb-8 text-lg">
+            Your presence at our wedding is the greatest gift of all. However, if you wish to honor us with a gift, we've registered at the following stores:
+          </p>
+          
+          <div className="space-y-4">
+            <a 
+              href="https://www.amazon.com/wedding/registry"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`block bg-${colors.primary}-500 text-white px-8 py-3 rounded-lg hover:bg-${colors.primary}-600 transition font-medium`}
+            >
+              Amazon Registry
+            </a>
+            <a 
+              href="https://www.crateandbarrel.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block bg-rose-500 text-white px-8 py-3 rounded-lg hover:bg-rose-600 transition font-medium"
+            >
+              Crate & Barrel
+            </a>
+            <a 
+              href="https://www.target.com/gift-registry"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block bg-rose-500 text-white px-8 py-3 rounded-lg hover:bg-rose-600 transition font-medium"
+            >
+              Target Registry
+            </a>
+          </div>
+        </div>
+      </div>
+    ),
+
+    admin: (
+      <div className="max-w-4xl mx-auto">
+        <h2 className="text-4xl font-serif text-center text-gray-800 mb-8">RSVP Responses (Admin)</h2>
+        
+        {loading ? (
+          <div className="text-center py-8">
+            <p className="text-gray-600">Loading responses...</p>
+          </div>
+        ) : rsvps.length === 0 ? (
+          <div className="bg-white/90 backdrop-blur p-8 rounded-lg shadow-lg text-center">
+            <p className="text-gray-600">No RSVPs yet. Responses will appear here automatically.</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <div className="bg-white/90 backdrop-blur p-4 rounded-lg shadow-lg">
+              <p className="text-lg font-semibold text-gray-800">
+                Total Responses: {rsvps.length} | 
+                Attending: {rsvps.filter(r => r.attending === 'yes').length} | 
+                Not Attending: {rsvps.filter(r => r.attending === 'no').length} |
+                Total Guests: {rsvps.filter(r => r.attending === 'yes').reduce((sum, r) => sum + parseInt(r.guests), 0)}
+              </p>
+            </div>
+            
+            {rsvps.map((rsvp, idx) => (
+              <div key={idx} className="bg-white/90 backdrop-blur p-6 rounded-lg shadow-lg">
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-gray-500">Name</p>
+                    <p className="font-semibold text-gray-800">{rsvp.name}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Email</p>
+                    <p className="text-gray-700">{rsvp.email}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Attending</p>
+                    <p className={`font-semibold ${rsvp.attending === 'yes' ? 'text-green-600' : 'text-red-600'}`}>
+                      {rsvp.attending === 'yes' ? 'Yes' : 'No'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Guests</p>
+                    <p className="text-gray-700">{rsvp.guests}</p>
+                  </div>
+                  {rsvp.dietary && (
+                    <div>
+                      <p className="text-sm text-gray-500">Dietary Restrictions</p>
+                      <p className="text-gray-700">{rsvp.dietary}</p>
+                    </div>
+                  )}
+                  {rsvp.message && (
+                    <div className="md:col-span-2">
+                      <p className="text-sm text-gray-500">Message</p>
+                      <p className="text-gray-700 italic">{rsvp.message}</p>
+                    </div>
+                  )}
+                </div>
+                <p className="text-xs text-gray-400 mt-4">
+                  Submitted: {new Date(rsvp.timestamp).toLocaleString()}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
+        
+        <button 
+          onClick={loadRsvps}
+          className={`mt-6 w-full bg-${colors.primary}-500 text-white py-3 rounded-lg font-medium hover:bg-${colors.primary}-600 transition`}
+        >
+          Refresh Responses
+        </button>
+      </div>
+    )
+  };
+
+  return (
+    <div className={`min-h-screen bg-gradient-to-br from-${colors.primary}-50 via-${colors.secondary}-50 to-${colors.accent}-50`}>
+      <nav className="bg-white/80 backdrop-blur shadow-sm sticky top-0 z-10">
+        <div className="max-w-6xl mx-auto px-4 py-4">
+          <div className="flex flex-wrap justify-center gap-2 md:gap-6">
+            {['home', 'details', 'rsvp', 'registry', 'admin'].map((section) => (
+              <button
+                key={section}
+                onClick={() => setActiveSection(section)}
+                className={`px-4 py-2 rounded-lg font-medium transition capitalize ${
+                  activeSection === section
+                    ? `bg-${colors.primary}-500 text-white`
+                    : `text-gray-700 hover:bg-${colors.primary}-100`
+                }`}
+              >
+                {section}
+              </button>
+            ))}
+          </div>
+        </div>
+      </nav>
+
+      <main className="max-w-6xl mx-auto px-4 py-12">
+        {sections[activeSection]}
+      </main>
+
+      <footer className="bg-white/80 backdrop-blur mt-16 py-8 text-center text-gray-600">
+        <Heart className={`w-6 h-6 mx-auto text-${colors.primary}-400 mb-2`} />
+        <p>Tristan & Sidney • November 14, 2026</p>
+        <p className="text-sm mt-2">Can't wait to celebrate with you!</p>
+      </footer>
+    </div>
+  );
+}
